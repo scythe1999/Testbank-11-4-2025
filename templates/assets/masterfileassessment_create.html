@@ -96,15 +96,14 @@
                 </tfoot>
             </table>
         </div>
-        <form method="POST" class="text-sm" onsubmit="openModal(event)">
-            <!-- Form contents here -->
-            <div class="mt-auto flex my-4">
-                <span class="flex-1"></span>
-                <button id="btns" class="sbmtbtn text-white font-medium text-xs px-4 mt-2 py-2 rounded-lg buttons_for_ocr" type="button" onclick="openModal(event)">
-                    Submit
-                </button>
-            </div>
-        </form>
+        <div id="load-error" class="text-red-600 text-sm mt-2" style="display: none;"></div>
+
+        <div class="mt-auto flex my-4">
+            <span class="flex-1"></span>
+            <button id="btns" class="sbmtbtn text-white font-medium text-xs px-4 mt-2 py-2 rounded-lg buttons_for_ocr" type="button" onclick="openModal(event)">
+                Submit
+            </button>
+        </div>
         
         
         
@@ -138,6 +137,7 @@
         const topicDropdown = document.getElementById("topicdropdown_assessment");
         const subtopicTable = document.getElementById("subtopic-table").getElementsByTagName('tbody')[0];
         const loadingIndicator = document.getElementById("loading-indicator");
+        const errorContainer = document.getElementById("load-error");
     
         let totals = {
             remembering: 0,
@@ -146,9 +146,23 @@
             analyzing: 0,
             evaluating: 0,
             creating: 0,
-            total: 0 
+            total: 0
         };
-    
+
+        function showError(message) {
+            if (!errorContainer) {
+                return;
+            }
+
+            if (message) {
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+            } else {
+                errorContainer.textContent = '';
+                errorContainer.style.display = 'none';
+            }
+        }
+
         function updateFooter() {
             const footer = document.querySelector('tfoot tr');
             footer.querySelector('[name="subtopic_remembering_total"]').value = totals.remembering;
@@ -195,14 +209,14 @@
     
             updateFooter();
         }
-    
         subjectDropdown.addEventListener("change", function() {
             const subjectId = subjectDropdown.value;
+            showError('');
             if (subjectId) {
-                loadingIndicator.style.display = "block"; 
-    
-                topicDropdown.innerHTML = '<option value="">Select topic</option>'; 
-    
+                loadingIndicator.style.display = "block";
+
+                topicDropdown.innerHTML = '<option value="">Select topic</option>';
+
                 fetch(`/get_topics/${subjectId}/`)
                     .then(response => response.json())
                     .then(data => {
@@ -213,24 +227,29 @@
                             topicDropdown.appendChild(option);
                         });
                         loadingIndicator.style.display = "none";
+                        showError('');
                     })
                     .catch(error => {
                         console.error('Error fetching topics:', error);
-                        loadingIndicator.style.display = "none"; 
+                        loadingIndicator.style.display = "none";
+                        showError('Unable to load topics for the selected subject. Please try again.');
                     });
             } else {
                 topicDropdown.innerHTML = '<option value="">Select topic</option>';
-                subtopicTable.innerHTML = '';  
-                loadingIndicator.style.display = "none"; 
+                subtopicTable.innerHTML = '';
+                loadingIndicator.style.display = "none";
+                showError('');
             }
         });
-    
+
         topicDropdown.addEventListener("change", function() {
             const topicId = topicDropdown.value;
+            showError('');
             if (topicId) {
-                loadingIndicator.style.display = "block"; 
-    
-                subtopicTable.innerHTML = ''; 
+                loadingIndicator.style.display = "block";
+
+                subtopicTable.innerHTML = '';
+
     
                 fetch(`/get_subtopics/${topicId}/`)
                     .then(response => response.json())
@@ -249,13 +268,13 @@
                                     <input type="number" step="any" name="subtopic_applying_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
                                 </td>
                                 <td class="border border-gray-500 px-2 py-2 text-center">
-                                    <input type="number" step="any" name="subtopic_applying_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
+                                    <input type="number" step="any" name="subtopic_analyzing_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
                                 </td>
                                 <td class="border border-gray-500 px-2 py-2 text-center">
                                     <input type="number" step="any" name="subtopic_evaluating_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
                                 </td>
                                 <td class="border border-gray-500 px-2 py-2 text-center">
-                                    <input type="number" step="any" name="subtopic_evaluating_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
+                                    <input type="number" step="any" name="subtopic_creating_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" />
                                 </td>
                                 <td class="border border-gray-500 px-2 py-2 text-center">
                                     <input type="number" name="subtopic_total_${subtopic.id}" value="0" min="0" class="bg-transparent w-12 px-2" disabled />
@@ -272,15 +291,18 @@
     
                         updateFooter();
     
-                        loadingIndicator.style.display = "none"; 
+                        loadingIndicator.style.display = "none";
+                        showError('');
                     })
                     .catch(error => {
                         console.error('Error fetching subtopics:', error);
-                        loadingIndicator.style.display = "none"; 
+                        loadingIndicator.style.display = "none";
+                        showError('Unable to load subtopics for the selected topic. Please try again.');
                     });
             } else {
-                subtopicTable.innerHTML = ''; 
-                loadingIndicator.style.display = "none"; 
+                subtopicTable.innerHTML = '';
+                loadingIndicator.style.display = "none";
+                showError('');
             }
         });
     });
