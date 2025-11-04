@@ -53,7 +53,7 @@
                 </style>
 
 
-            <form method="POST" action="{% url 'table_of_secificationcreate' pk=subject.id %}">
+            <form id="tos-create-form" method="POST" action="{% url 'table_of_secificationcreate' pk=subject.id %}">
                 {% csrf_token %}
                 <div class="overflow-x-auto space-y-8 text-xs">
                     <table class="min-w-full border-collapse border border-gray-500">
@@ -72,34 +72,34 @@
                         </thead>
                         <tbody id="cardtext">
                             {% for topic in topics %}
-                            <tr class="text-center bg-white">
+                            <tr class="text-center bg-white topic-summary-row" data-topic-id="{{ topic.id }}">
                                 <td class="w-1/4 border border-gray-500 px-4 py-2 text-left">{{ topic.topic_name }}</td>
                                 <td class="border border-gray-500 px-4 py-2 text-center">
                                     <div class="flex items-center justify-center">
-                                        <input type="number" name="pwd_{{ topic.id }}" value="0" class="bg-transparent text-center w-10" disabled />
+                                        <input type="number" name="pwd_{{ topic.id }}" value="0" class="bg-transparent text-center w-10" disabled data-topic-id="{{ topic.id }}" data-summary-category="pwd" />
                                         <span class="ml-0.5">%</span>
                                     </div>
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="remembering_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="remembering_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="remembering" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="understanding_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="understanding_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="understanding" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="applying_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="applying_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="applying" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="analyzing_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="analyzing_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="analyzing" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="evaluating_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="evaluating_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="evaluating" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="creating_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled/>
+                                    <input type="number" name="creating_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="creating" />
                                 </td>
                                 <td class="border border-gray-500 px-4 py-2">
-                                    <input type="number" name="total_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled />
+                                    <input type="number" name="total_{{ topic.id }}" value="0" class="bg-transparent text-center w-12 px-2" disabled data-topic-id="{{ topic.id }}" data-summary-category="total" />
                                 </td>
                             </tr>
                             {% endfor %}
@@ -154,7 +154,7 @@
                             </thead>
                             <tbody id="cardtext">
                                 {% for subtopic in topic.subtopic_set.all %}
-                                <tr class="text-center bg-white">
+                                <tr class="text-center bg-white" data-topic-id="{{ topic.id }}" data-subtopic-id="{{ subtopic.id }}">
                                     <td class="w-1/4 border border-gray-500 px-4 py-2 text-left">{{ subtopic.subtopic_name }}</td>
                                     <td class="border border-gray-500 px-4 py-2 text-center">
                                         <div class="flex items-center justify-center">
@@ -191,15 +191,12 @@
                     {% endfor %}
 
 
-                    <form method="POST" class="text-sm" onsubmit="openModal(event)">
-                        <!-- Form contents here -->
-                        <div class="mt-auto flex my-4">
-                            <span class="flex-1"></span>
-                            <button id="btns" class="sbmtbtn text-white font-medium text-xs px-4 mt-2 py-2 rounded-lg buttons_for_ocr" type="button" onclick="openModal(event)">
-                                Submit
-                            </button>
-                        </div>
-                    </form>
+                    <div class="mt-auto flex my-4">
+                        <span class="flex-1"></span>
+                        <button id="btns" class="sbmtbtn text-white font-medium text-xs px-4 mt-2 py-2 rounded-lg buttons_for_ocr" type="button" onclick="openModal(event)">
+                            Submit
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -207,198 +204,173 @@
 </div>
 <script>
     function openModal(event) {
-        event.preventDefault(); 
-        document.getElementById('createconfirmation').showModal(); 
+        event.preventDefault();
+        document.getElementById('createconfirmation').showModal();
     }
-    
+
     function closeModal() {
-        document.getElementById('createconfirmation').close(); 
+        document.getElementById('createconfirmation').close();
     }
-    
+
     function confirmCreate() {
-        document.querySelector('form').submit();
+        const form = document.getElementById('tos-create-form');
+        if (form) {
+            form.submit();
+        }
     }
-    
-    
-    document.addEventListener("DOMContentLoaded", function () {
-        const totals = {
-            pwd: 0,
-            remembering: 0,
-            understanding: 0,
-            applying: 0,
-            analyzing: 0,
-            evaluating: 0,
-            creating: 0,
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const subtopicRows = document.querySelectorAll('tr[data-subtopic-id]');
+        const categories = ['remembering', 'understanding', 'applying', 'analyzing', 'evaluating', 'creating'];
+
+        const overallInputs = {
+            pwd: document.querySelector('input[name="pwd_cat_update"]'),
+            remembering: document.querySelector('input[name="remembering_cat"]'),
+            understanding: document.querySelector('input[name="understanding_cat"]'),
+            applying: document.querySelector('input[name="applying_cat"]'),
+            analyzing: document.querySelector('input[name="analyzing_cat"]'),
+            evaluating: document.querySelector('input[name="evaluating_cat"]'),
+            creating: document.querySelector('input[name="creating_cat"]'),
+            total: document.querySelector('input[name="totals_cat"]'),
         };
-    
-        const inputs = document.querySelectorAll('input[name^="subtopic_"]');
-        let debounceTimeout;
-    
-        inputs.forEach(input => {
-            let previousValue = 0;
-    
-            input.addEventListener("input", function () {
-                console.log("Input detected:", this.name); 
-    
-                const subtopicId = this.name.split('_')[2];
-                const topicId = this.dataset.topicId;
-    
-                const rememberingValue = getValue(`subtopic_remembering_${subtopicId}`);
-                const understandingValue = getValue(`subtopic_understanding_${subtopicId}`);
-                const applyingValue = getValue(`subtopic_applying_${subtopicId}`);
-                const analyzingValue = getValue(`subtopic_analyzing_${subtopicId}`);
-                const evaluatingValue = getValue(`subtopic_evaluating_${subtopicId}`);
-                const creatingValue = getValue(`subtopic_creating_${subtopicId}`);
-    
-                const subtopicTotal = rememberingValue + understandingValue + applyingValue + analyzingValue + evaluatingValue + creatingValue;
-                document.querySelector(`input[name="subtopic_total_${subtopicId}"]`).value = subtopicTotal;
-    
-                updateTotalsForTopic(topicId);
-    
-                const currentValue = parseFloat(this.value) || 0;
-                const change = currentValue - previousValue;
-                previousValue = currentValue;
-    
-                updateTotals(topicId, this.name.split('_')[1], change);
-    
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(calculateTotals, 30); 
-            });
-        });
-    
-        function getValue(name) {
-            const input = document.querySelector(`input[name="${name}"]`);
-            if (input) {
-                return parseFloat(input.value) || 0;
-            } else {
-                console.log(`Input not found for name: ${name}`); 
+
+        function getNumericValue(element) {
+            return element ? parseFloat(element.value) || 0 : 0;
+        }
+
+        function formatNumber(value) {
+            if (!Number.isFinite(value)) {
                 return 0;
             }
+            return Number.isInteger(value) ? value : value.toFixed(2);
         }
-    
-        function updateTotalsForTopic(topicId) {
-            updateRememberingTotal(topicId);
-            updateUnderstandingTotal(topicId);
-            updateApplyingTotal(topicId);
-            updateAnalyzingTotal(topicId);
-            updateEvaluatingTotal(topicId);
-            updateCreatingTotal(topicId);
-            updatePwdTotal(topicId);
-            updateTopicTotal(topicId);
-        }
-    
-        function calculateTotals() {
-            console.log("Calculating totals..."); 
-        
-            const pwdCat = getValue('pwd_cat');
-            console.log("PWD Cat:", pwdCat); 
-            const rememberingCat = getValue('remembering_cat');
-            const understandingCat = getValue('understanding_cat');
-            const applyingCat = getValue('applying_cat');
-            const analyzingCat = getValue('analyzing_cat');
-            const evaluatingCat = getValue('evaluating_cat');
-            const creatingCat = getValue('creating_cat');
-        
-            const total = rememberingCat + understandingCat + applyingCat + analyzingCat + evaluatingCat + creatingCat;
-            console.log("Total:", total); 
-        
-            document.querySelector('input[name="pwd_cat_update"]').value = pwdCat;
-            document.querySelector('input[name="remembering_cat"]').value = rememberingCat;
-            document.querySelector('input[name="understanding_cat"]').value = understandingCat;
-            document.querySelector('input[name="applying_cat"]').value = applyingCat;
-            document.querySelector('input[name="analyzing_cat"]').value = analyzingCat;
-            document.querySelector('input[name="evaluating_cat"]').value = evaluatingCat;
-            document.querySelector('input[name="creating_cat"]').value = creatingCat;
-        
-            const totalsCatInput = document.querySelector('input[name="totals_cat"]');
-            if (totalsCatInput) {
-                totalsCatInput.value = total;
-                console.log("Updated totals_cat:", total); 
-            } else {
-                console.log("Error: 'totals_cat' input not found!"); 
+
+        function updateSubtopicRow(row) {
+            const subtopicId = row.dataset.subtopicId;
+            if (!subtopicId) {
+                return;
             }
-        }
-        
-    
-        function updateRememberingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_remembering_', 'remembering');
-        }
-    
-        function updateUnderstandingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_understanding_', 'understanding');
-        }
-    
-        function updateApplyingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_applying_', 'applying');
-        }
-    
-        function updateAnalyzingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_analyzing_', 'analyzing');
-        }
-    
-        function updateEvaluatingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_evaluating_', 'evaluating');
-        }
-    
-        function updateCreatingTotal(topicId) {
-            updateTotalForCategory(topicId, 'subtopic_creating_', 'creating');
-        }
-    
-        function updateTotalForCategory(topicId, subtopicPrefix, category) {
+
             let total = 0;
-            const inputs = document.querySelectorAll(`input[name^="${subtopicPrefix}"]`);
-    
-            inputs.forEach(input => {
-                if (input.dataset.topicId == topicId) {
-                    total += parseFloat(input.value) || 0;
-                }
+            categories.forEach(category => {
+                const input = row.querySelector(`[name="subtopic_${category}_${subtopicId}"]`);
+                total += getNumericValue(input);
             });
-    
-            const categoryInput = document.querySelector(`input[name="${category}_${topicId}"]`);
-            if (categoryInput) {
-                categoryInput.value = total;
-            }
-        }
-    
-        function updatePwdTotal(topicId) {
-            let pwdTotal = 0;
-            const pwdInputs = document.querySelectorAll(`input[name^="subtopic_pwd_"]`);
-    
-            pwdInputs.forEach(input => {
-                if (input.dataset.topicId == topicId) {
-                    pwdTotal += parseFloat(input.value) || 0;
-                }
-            });
-    
-            const pwdInput = document.querySelector(`input[name="pwd_${topicId}"]`);
-            if (pwdInput) {
-                pwdInput.value = Number.isInteger(pwdTotal) ? pwdTotal : pwdTotal.toFixed(2);
-            }
-        }
-    
-        function updateTopicTotal(topicId) {
-            let topicTotal = 0;
-            const subtopicTotals = document.querySelectorAll(`input[name^="subtopic_total_"]`);
-    
-            subtopicTotals.forEach(input => {
-                if (input.dataset.topicId == topicId) {
-                    topicTotal += parseFloat(input.value) || 0;
-                }
-            });
-    
-            const totalInput = document.querySelector(`input[name="total_${topicId}"]`);
+
+            const totalInput = row.querySelector(`[name="subtopic_total_${subtopicId}"]`);
             if (totalInput) {
-                totalInput.value = topicTotal; 
+                totalInput.value = formatNumber(total);
             }
         }
-    
-        function updateTotals(topicId, category, change) {
-            if (category in totals) {
-                totals[category] += change;
-                document.querySelector(`input[name="${category}_cat"]`).value = totals[category];
+
+        function updateTopicSummary(topicId) {
+            if (!topicId) {
+                return;
+            }
+
+            const topicRows = document.querySelectorAll(`tr[data-topic-id="${topicId}"][data-subtopic-id]`);
+            if (!topicRows.length) {
+                return;
+            }
+
+            const totals = { pwd: 0 };
+            categories.forEach(category => {
+                totals[category] = 0;
+            });
+
+            topicRows.forEach(row => {
+                const subtopicId = row.dataset.subtopicId;
+                const pwdInput = row.querySelector(`[name="subtopic_pwd_${subtopicId}"]`);
+                totals.pwd += getNumericValue(pwdInput);
+
+                categories.forEach(category => {
+                    const input = row.querySelector(`[name="subtopic_${category}_${subtopicId}"]`);
+                    totals[category] += getNumericValue(input);
+                });
+            });
+
+            const summaryRow = document.querySelector(`.topic-summary-row[data-topic-id="${topicId}"]`);
+            if (summaryRow) {
+                const pwdInput = summaryRow.querySelector(`input[name="pwd_${topicId}"]`);
+                if (pwdInput) {
+                    pwdInput.value = formatNumber(totals.pwd);
+                }
+
+                categories.forEach(category => {
+                    const input = summaryRow.querySelector(`input[name="${category}_${topicId}"]`);
+                    if (input) {
+                        input.value = formatNumber(totals[category]);
+                    }
+                });
+
+                const totalInput = summaryRow.querySelector(`input[name="total_${topicId}"]`);
+                if (totalInput) {
+                    const total = categories.reduce((sum, category) => sum + totals[category], 0);
+                    totalInput.value = formatNumber(total);
+                }
             }
         }
+
+        function updateOverallTotals() {
+            const summaryRows = document.querySelectorAll('.topic-summary-row[data-topic-id]');
+            const totals = { pwd: 0 };
+
+            categories.forEach(category => {
+                totals[category] = 0;
+            });
+
+            summaryRows.forEach(row => {
+                const topicId = row.dataset.topicId;
+                if (!topicId) {
+                    return;
+                }
+
+                const pwdInput = row.querySelector(`input[name="pwd_${topicId}"]`);
+                totals.pwd += getNumericValue(pwdInput);
+
+                categories.forEach(category => {
+                    const input = row.querySelector(`input[name="${category}_${topicId}"]`);
+                    totals[category] += getNumericValue(input);
+                });
+            });
+
+            if (overallInputs.pwd) {
+                overallInputs.pwd.value = formatNumber(totals.pwd);
+            }
+
+            categories.forEach(category => {
+                if (overallInputs[category]) {
+                    overallInputs[category].value = formatNumber(totals[category]);
+                }
+            });
+
+            if (overallInputs.total) {
+                const total = categories.reduce((sum, category) => sum + totals[category], 0);
+                overallInputs.total.value = formatNumber(total);
+            }
+        }
+
+        subtopicRows.forEach(row => {
+            const inputs = row.querySelectorAll('input[type="number"]:not([disabled])');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    updateSubtopicRow(row);
+                    updateTopicSummary(row.dataset.topicId);
+                    updateOverallTotals();
+                });
+            });
+        });
+
+        const topicIds = new Set();
+        subtopicRows.forEach(row => {
+            updateSubtopicRow(row);
+            if (row.dataset.topicId) {
+                topicIds.add(row.dataset.topicId);
+            }
+        });
+
+        topicIds.forEach(topicId => updateTopicSummary(topicId));
+        updateOverallTotals();
     });
-    
 </script>
 {% endblock %}
