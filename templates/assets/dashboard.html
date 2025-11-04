@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link type="text/css" rel="stylesheet" href="{% static 'css/main.css' %}">
+
+<section class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100">
+  <div class="absolute inset-0 opacity-40" aria-hidden="true">
+    <div class="pointer-events-none absolute -left-32 top-24 h-72 w-72 rounded-full bg-indigo-500 blur-3xl"></div>
+    <div class="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-sky-500 blur-3xl"></div>
+  </div>
+  <div class="relative mx-auto w-full max-w-7xl px-6 py-12 sm:px-10 lg:px-16">
+    <div class="flex flex-col gap-10 xl:flex-row xl:items-center xl:justify-between">
+      <div class="max-w-2xl space-y-6">
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-100">Dashboard</span>
+        <h1 class="text-3xl font-semibold sm:text-4xl lg:text-5xl">Academic Performance Pulse</h1>
+        <p class="text-sm text-indigo-100/80 sm:text-base">
+          Monitor the health of assessments, understand student engagement, and uncover opportunities for improvement in a single interactive view.
+        </p>
+        <div class="inline-flex items-center gap-3 rounded-full border border-indigo-400/40 bg-white/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-indigo-100">
+          <i class='bx bx-calendar text-lg'></i>
+          <span>Active Academic Year: {{ active_year_label }}</span>
+        </div>
+      </div>
+      <div class="grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-2xl border border-white/20 bg-white/95 p-6 text-slate-900 shadow-lg backdrop-blur" id="cardbody">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">Students</p>
+          <p class="mt-3 text-3xl font-semibold">{{ enrolled_students_count }}</p>
+          <p class="mt-2 text-sm text-slate-600">Learners accounted for in the current overview.</p>
+        </div>
+        <div class="rounded-2xl border border-white/20 bg-white/95 p-6 text-slate-900 shadow-lg backdrop-blur" id="cardbody">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">Questionnaires</p>
+          <p class="mt-3 text-3xl font-semibold">{{ total }}</p>
+          <p class="mt-2 text-sm text-slate-600">Compiled and ready for deployment across assessments.</p>
+        </div>
+        <div class="rounded-2xl border border-white/20 bg-white/95 p-6 text-slate-900 shadow-lg backdrop-blur" id="cardbody">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">Assessments</p>
+          <p class="mt-3 text-3xl font-semibold">{{ assessment_summaries|length }}</p>
+          <p class="mt-2 text-sm text-slate-600">Assessment sets with measurable performance data.</p>
+        </div>
+        <div class="rounded-2xl border border-white/20 bg-white/95 p-6 text-slate-900 shadow-lg backdrop-blur" id="cardbody">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">Mastery Average</p>
+          <p class="mt-3 text-3xl font-semibold">{{ overall_percentages.average|floatformat:2 }}%</p>
+          <p class="mt-2 text-sm text-slate-600">Overall mastery score across Bloom's taxonomy levels.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-100">Restricted</p>
+            <p class="mt-3 text-2xl font-semibold">{{ restricted_counts }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/80 text-white shadow-lg">
+            <i class='bx bxs-lock-alt text-xl'></i>
+          </div>
+        </div>
+        <p class="mt-4 text-xs text-indigo-100/80">Items marked for review before release.</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-100">Restriction Ratio</p>
+            <p class="mt-3 text-2xl font-semibold">{{ restricted_percentage|floatformat:2 }}%</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/80 text-white shadow-lg">
+            <i class='bx bx-bar-chart text-xl'></i>
+          </div>
+        </div>
+        <p class="mt-4 text-xs text-indigo-100/80">Share of questionnaires currently restricted.</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-100">Subjects</p>
+            <p class="mt-3 text-2xl font-semibold">{{ subject_data|length }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/80 text-white shadow-lg">
+            <i class='bx bx-book-open text-xl'></i>
+          </div>
+        </div>
+        <p class="mt-4 text-xs text-indigo-100/80">Subject areas participating in assessments.</p>
+      </div>
+      <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-100">Insights Saved</p>
+            <p class="mt-3 text-2xl font-semibold">{{ assessment_highlights|length }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/80 text-white shadow-lg">
+            <i class='bx bx-bulb text-xl'></i>
+          </div>
+        </div>
+        <p class="mt-4 text-xs text-indigo-100/80">Top assessment highlights captured below.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-slate-100 py-12">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
+    <div class="flex flex-col gap-6 text-center">
+      <div class="space-y-3">
+        <h2 class="text-3xl font-semibold text-slate-900">Performance Insights</h2>
+        <p class="text-base text-slate-600 md:text-lg">
+          Explore how restriction patterns align with Bloom's taxonomy and dive into detailed mastery for each assessment.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-12 grid gap-8 xl:grid-cols-3">
+      <div class="space-y-8 xl:col-span-1">
+        <div class="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900">Subject Highlights</h3>
+              <p class="mt-2 text-sm text-slate-500">Top performing subjects with the highest mastery rates.</p>
+            </div>
+            <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600">Top {{ subject_highlights|length }}</span>
+          </div>
+          <div class="mt-6 space-y-4">
+            {% if subject_highlights %}
+              {% for subject in subject_highlights %}
+              <div class="flex items-center gap-4 rounded-2xl border border-slate-100 p-4 shadow-sm">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-600">
+                  <span class="text-sm font-semibold">{{ forloop.counter }}</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between text-sm font-semibold text-slate-700">
+                    <span>{{ subject.subject_code }}</span>
+                    <span>{{ subject.percentage|floatformat:2 }}%</span>
+                  </div>
+                  <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-400" style="width: {{ subject.percentage }}%"></div>
+                  </div>
+                  <p class="mt-2 text-[11px] uppercase tracking-wide text-slate-400">Correct {{ subject.total_correct }} / {{ subject.total_questions }}</p>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-sm text-slate-500">No subject performance data is available for the selected academic year.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900">Restricted by Subject</h3>
+              <p class="mt-2 text-sm text-slate-500">Subjects with the highest concentration of restricted items.</p>
+            </div>
+            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-600">Top {{ restricted_subject_breakdown|length }}</span>
+          </div>
+          <div class="mt-6 space-y-4">
+            {% if restricted_subject_breakdown %}
+              {% for subject in restricted_subject_breakdown %}
+              <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div class="text-sm font-semibold text-slate-600">{{ subject.subject_code }}</div>
+                <div class="text-sm font-semibold text-slate-900">{{ subject.total }} items</div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-sm text-slate-500">No restricted subject data to display.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-8 xl:col-span-2">
+        <div class="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-900">Restricted Distribution</h3>
+              <p class="text-sm text-slate-500">Visual distribution of restricted questionnaires across Bloom's levels.</p>
+            </div>
+            <div class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600">{{ restricted_counts }} items</div>
+          </div>
+          <div class="mt-8 flex items-center justify-center">
+            <canvas id="chartDoughnut" class="!h-64 !w-64"></canvas>
+          </div>
+          <p class="mt-6 text-center text-xs text-slate-400">Hover over a slice to reveal the proportion for each competency.</p>
+        </div>
+
+        <div class="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-900">Assessment Performance</h3>
+              <p class="text-sm text-slate-500">Compare mastery rates per assessment or review the aggregated overview.</p>
+            </div>
+            <div class="w-full lg:w-72">
+              <label for="assessmentDropdown" class="sr-only">Select assessment</label>
+              <select id="assessmentDropdown" class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-3 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-200">
+                <option value="overall"
+                        data-remembering="{{ overall_percentages.remembering }}"
+                        data-creating="{{ overall_percentages.creating }}"
+                        data-understanding="{{ overall_percentages.understanding }}"
+                        data-applying="{{ overall_percentages.applying }}"
+                        data-analyzing="{{ overall_percentages.analyzing }}"
+                        data-evaluating="{{ overall_percentages.evaluating }}"
+                        data-average="{{ overall_percentages.average }}">
+                  Overall Mastery
+                </option>
+                {% for record in assessment_summaries %}
+                <option value="{{ record.id }}"
+                        data-remembering="{{ record.remembering }}"
+                        data-creating="{{ record.creating }}"
+                        data-understanding="{{ record.understanding }}"
+                        data-applying="{{ record.applying }}"
+                        data-analyzing="{{ record.analyzing }}"
+                        data-evaluating="{{ record.evaluating }}"
+                        data-average="{{ record.average }}">
+                  {{ record.label }}{% if record.subject_code %} · {{ record.subject_code }}{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mt-10">
+            <div class="h-[360px] w-full" id="bar-chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white py-12">
+  <div class="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
+    <div class="grid gap-8 lg:grid-cols-5">
+      <div class="lg:col-span-3">
+        <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-semibold text-slate-900">Assessment Highlights</h3>
+              <p class="text-sm text-slate-500">Top performing assessments ranked by overall mastery.</p>
+            </div>
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">{{ assessment_highlights|length }} highlighted</span>
+          </div>
+          <div class="mt-6 overflow-hidden rounded-2xl border border-slate-100">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+              <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th scope="col" class="px-4 py-3">Assessment</th>
+                  <th scope="col" class="px-4 py-3">Subject</th>
+                  <th scope="col" class="px-4 py-3 text-right">Mastery</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% if assessment_highlights %}
+                  {% for record in assessment_highlights %}
+                  <tr class="hover:bg-slate-50/70">
+                    <td class="px-4 py-4 font-semibold text-slate-700">{{ record.label }}</td>
+                    <td class="px-4 py-4 text-slate-500">{{ record.subject_code|default:'—' }}</td>
+                    <td class="px-4 py-4 text-right font-semibold text-emerald-600">{{ record.average|floatformat:2 }}%</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="3" class="px-4 py-6 text-center text-sm text-slate-500">No assessment highlights available for this academic year.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-8 lg:col-span-2">
+        <div class="rounded-3xl border border-slate-100 bg-slate-50 p-6 shadow-xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900">Latest Restricted Questions</h3>
+              <p class="text-sm text-slate-500">A quick snapshot of items awaiting validation.</p>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-600">
+              <i class='bx bx-shield-quarter text-lg'></i>
+            </div>
+          </div>
+          <div class="mt-6 space-y-4">
+            {% if recent_restricted %}
+              {% for question in recent_restricted %}
+              <div class="space-y-2 rounded-2xl border border-amber-200/70 bg-white p-4">
+                <p class="text-sm font-medium text-slate-700">{{ question.description|truncatechars:110 }}</p>
+                <div class="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
+                  <span>{{ question.subject.subject_code|default:'—' }}</span>
+                  <span>{{ question.category.category|title }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-sm text-slate-500">No restricted questionnaires recorded yet.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl">
+          <h3 class="text-lg font-semibold text-slate-900">Bloom's Mastery Overview</h3>
+          <p class="mt-2 text-sm text-slate-500">Average mastery percentages across all assessments.</p>
+          <dl class="mt-6 space-y-4">
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Remembering</dt>
+              <dd>{{ overall_percentages.remembering|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Creating</dt>
+              <dd>{{ overall_percentages.creating|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Understanding</dt>
+              <dd>{{ overall_percentages.understanding|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Applying</dt>
+              <dd>{{ overall_percentages.applying|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Analyzing</dt>
+              <dd>{{ overall_percentages.analyzing|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+              <dt>Evaluating</dt>
+              <dd>{{ overall_percentages.evaluating|floatformat:2 }}%</dd>
+            </div>
+            <div class="flex items-center justify-between rounded-2xl bg-indigo-50 p-4 text-sm font-semibold text-indigo-600">
+              <dt>Average Mastery</dt>
+              <dd>{{ overall_percentages.average|floatformat:2 }}%</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<input type="number" id="statuss" value="0" class="hidden">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/@preline/plugin@1.0.0/dist/preline.min.js"></script>
+
+{{ bloom_labels|json_script:"bloom-labels" }}
+{{ bloom_data|json_script:"bloom-data" }}
+
+<script>
+const bloomLabels = JSON.parse(document.getElementById('bloom-labels').textContent || '[]');
+const bloomData = JSON.parse(document.getElementById('bloom-data').textContent || '[]');
+
+const doughnutConfig = {
+  type: 'doughnut',
+  data: {
+    labels: bloomLabels,
+    datasets: [
+      {
+        label: 'Restricted Counts',
+        data: bloomData,
+        backgroundColor: [
+          '#312e81',
+          '#4338ca',
+          '#2563eb',
+          '#0ea5e9',
+          '#14b8a6',
+          '#f97316',
+        ],
+        borderWidth: 0,
+        hoverOffset: 6,
+      },
+    ],
+  },
+  options: {
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#1f2937',
+          font: {
+            family: 'inherit',
+            size: 12,
+          },
+        },
+      },
+    },
+  },
+};
+
+const doughnutCanvas = document.getElementById('chartDoughnut');
+if (doughnutCanvas) {
+  new Chart(doughnutCanvas, doughnutConfig);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  let chartInstance;
+
+  const chartConfig = {
+    series: [],
+    chart: {
+      type: 'bar',
+      height: 340,
+      toolbar: { show: false },
+    },
+    dataLabels: { enabled: false },
+    colors: ['#4c1d95'],
+    plotOptions: {
+      bar: {
+        columnWidth: '40%',
+        borderRadius: 6,
+      },
+    },
+    xaxis: {
+      categories: [
+        'Remembering',
+        'Creating',
+        'Understanding',
+        'Applying',
+        'Analyzing',
+        'Evaluating',
+        'Average',
+      ],
+      labels: {
+        style: {
+          colors: '#0f172a',
+          fontSize: '12px',
+          fontFamily: 'inherit',
+          fontWeight: 500,
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: '#0f172a',
+          fontSize: '12px',
+          fontFamily: 'inherit',
+        },
+      },
+    },
+    grid: {
+      borderColor: '#e2e8f0',
+      strokeDashArray: 5,
+      padding: { top: 18, right: 12, left: 12 },
+    },
+    tooltip: { theme: 'dark' },
+  };
+
+  function updateBarChart(assessmentId) {
+    const option = document.querySelector(`#assessmentDropdown option[value='${assessmentId}']`);
+    if (!option) {
+      return;
+    }
+
+    const dataPoints = [
+      parseFloat(option.dataset.remembering) || 0,
+      parseFloat(option.dataset.creating) || 0,
+      parseFloat(option.dataset.understanding) || 0,
+      parseFloat(option.dataset.applying) || 0,
+      parseFloat(option.dataset.analyzing) || 0,
+      parseFloat(option.dataset.evaluating) || 0,
+      parseFloat(option.dataset.average) || 0,
+    ].map((value) => Number(value.toFixed(2)));
+
+    if (chartInstance) {
+      chartInstance.updateSeries([
+        {
+          name: 'Percentage',
+          data: dataPoints,
+        },
+      ]);
+    } else {
+      chartConfig.series = [
+        {
+          name: 'Percentage',
+          data: dataPoints,
+        },
+      ];
+
+      chartInstance = new ApexCharts(document.querySelector('#bar-chart'), chartConfig);
+      chartInstance.render();
+    }
+  }
+
+  function handleChange() {
+    updateBarChart(document.getElementById('assessmentDropdown').value);
+    if (typeof changestatus === 'function') {
+      changestatus();
+    }
+  }
+
+  const dropdown = document.getElementById('assessmentDropdown');
+  if (dropdown) {
+    dropdown.addEventListener('change', handleChange);
+    handleChange();
+  }
+});
+</script>
+{% endblock content %}
